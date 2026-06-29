@@ -1,0 +1,146 @@
+package com.example.diary.data.dao;
+
+import android.database.Cursor;
+import androidx.annotation.NonNull;
+import androidx.room.CoroutinesRoom;
+import androidx.room.EntityInsertionAdapter;
+import androidx.room.RoomDatabase;
+import androidx.room.RoomSQLiteQuery;
+import androidx.room.SharedSQLiteStatement;
+import androidx.room.util.CursorUtil;
+import androidx.room.util.DBUtil;
+import androidx.sqlite.db.SupportSQLiteStatement;
+import com.example.diary.data.entity.Tag;
+import java.lang.Class;
+import java.lang.Exception;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import javax.annotation.processing.Generated;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
+import kotlinx.coroutines.flow.Flow;
+
+@Generated("androidx.room.RoomProcessor")
+@SuppressWarnings({"unchecked", "deprecation"})
+public final class TagDao_Impl implements TagDao {
+  private final RoomDatabase __db;
+
+  private final EntityInsertionAdapter<Tag> __insertionAdapterOfTag;
+
+  private final SharedSQLiteStatement __preparedStmtOfIncrementUseCount;
+
+  public TagDao_Impl(@NonNull final RoomDatabase __db) {
+    this.__db = __db;
+    this.__insertionAdapterOfTag = new EntityInsertionAdapter<Tag>(__db) {
+      @Override
+      @NonNull
+      protected String createQuery() {
+        return "INSERT OR REPLACE INTO `tags` (`name`,`useCount`) VALUES (?,?)";
+      }
+
+      @Override
+      protected void bind(@NonNull final SupportSQLiteStatement statement,
+          @NonNull final Tag entity) {
+        statement.bindString(1, entity.getName());
+        statement.bindLong(2, entity.getUseCount());
+      }
+    };
+    this.__preparedStmtOfIncrementUseCount = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "UPDATE tags SET useCount = useCount + 1 WHERE name = ?";
+        return _query;
+      }
+    };
+  }
+
+  @Override
+  public Object insertTag(final Tag tag, final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        __db.beginTransaction();
+        try {
+          __insertionAdapterOfTag.insert(tag);
+          __db.setTransactionSuccessful();
+          return Unit.INSTANCE;
+        } finally {
+          __db.endTransaction();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object incrementUseCount(final String name, final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfIncrementUseCount.acquire();
+        int _argIndex = 1;
+        _stmt.bindString(_argIndex, name);
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfIncrementUseCount.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Flow<List<Tag>> getAllTags() {
+    final String _sql = "SELECT * FROM tags ORDER BY useCount DESC";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
+    return CoroutinesRoom.createFlow(__db, false, new String[] {"tags"}, new Callable<List<Tag>>() {
+      @Override
+      @NonNull
+      public List<Tag> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
+          final int _cursorIndexOfUseCount = CursorUtil.getColumnIndexOrThrow(_cursor, "useCount");
+          final List<Tag> _result = new ArrayList<Tag>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final Tag _item;
+            final String _tmpName;
+            _tmpName = _cursor.getString(_cursorIndexOfName);
+            final int _tmpUseCount;
+            _tmpUseCount = _cursor.getInt(_cursorIndexOfUseCount);
+            _item = new Tag(_tmpName,_tmpUseCount);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+        }
+      }
+
+      @Override
+      protected void finalize() {
+        _statement.release();
+      }
+    });
+  }
+
+  @NonNull
+  public static List<Class<?>> getRequiredConverters() {
+    return Collections.emptyList();
+  }
+}
